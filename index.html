@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learn With AI</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Thêm vào <head> -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <!-- Thêm Chart.js cho biểu đồ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Thêm vào index.html nếu chưa có -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.5.1/mammoth.browser.min.js"></script>
+
+  </head>
+  <body>
+    <!-- header -->
+    <div class="header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">
+            <i class="fas fa-robot floating"></i>
+            <h1>Learn With AI</h1>
+          </div>
+
+          <nav class="nav-header">
+            <button onclick="showSection('home')" class="nav-btn">
+              Trang Chủ
+            </button>
+            <button onclick="toggleChat()" class="nav-btn">AI Chat</button>
+            <button onclick="showSection('quiz')" class="nav-btn">
+              Tạo Quiz
+            </button>
+            <button onclick="showSection('summary')" class="nav-btn">
+              Tóm Tắt
+            </button>
+          </nav>
+
+          <div class="auth-button">
+            <button onclick="showModal('login')" class="login-button">
+              Đăng Nhập
+            </button>
+            <button onclick="showModal('register')" class="register-button">
+              Đăng Ký
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- modal login và register -->
+    <!-- login-modal  -->
+    <div class="modal hidden" id="login-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <i class="fas fa-sign-in-alt"></i>
+          <h2>Đăng Nhập</h2>
+        </div>
+        <form class="modal-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="you@gmail.com" required />
+          </div>
+          <div class="form-group">
+            <label>Mật Khẩu</label>
+            <input type="password" placeholder="••••••••" required />
+          </div>
+
+          <button type="submit" class="btn-submit">Đăng Nhập</button>
+        </form>
+
+        <div class="modal-footer">
+          <p>
+            Bạn chưa có tài khoản?
+            <button onclick="switchModal('register')" class="switch-modal">
+              Đăng Ký Ngay
+            </button>
+          </p>
+        </div>
+        <button onclick="hideModal('login')" class="modal-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- modal-register -->
+    <div id="register-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <i class="fas fa-user-plus register-icon"></i>
+          <h2>Đăng Ký</h2>
+        </div>
+        <form class="modal-form" onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label>Họ tên</label>
+            <input type="text" placeholder="Nguyễn Văn A" required />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="you@gmail.com" required />
+          </div>
+          <div class="form-group">
+            <label>Mật Khẩu</label>
+            <input type="password" placeholder="••••••••" required />
+          </div>
+          <div class="form-group">
+            <label>Xác Nhận Mật Khẩu</label>
+            <input type="password" placeholder="••••••••" required />
+          </div>
+          <button type="submit" class="btn-submit">Đăng Ký</button>
+        </form>
+
+        <div class="modal-footer">
+          <p>
+            Đã có tài khoản?
+            <button
+              onclick="switchModal('login')"
+              class="switch-modal register-switch"
+            >
+              Đăng nhập
+            </button>
+          </p>
+        </div>
+        <button onclick="hideModal('register')" class="modal-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quiz Review Modal -->
+    <div id="quiz-review-modal" class="modal hidden">
+      <div class="modal-content quiz-review-content">
+        <div class="modal-header quiz-review-header">
+          <h2><i class="fas fa-clipboard-check"></i> Xem lại Quiz</h2>
+        </div>
+        <div id="quiz-review-questions" class="quiz-questions">
+          <!-- Quiz questions will be loaded here for review -->
+        </div>
+        <div class="modal-footer">
+          <button onclick="hideModal('quiz-review')" class="btn-submit">
+            Đóng
+          </button>
+        </div>
+        <button onclick="hideModal('quiz-review')" class="modal-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION CÁC NÚT -->
+    <main class="main-content">
+      <!-- Home Section -->
+      <section id="home" class="section active">
+        <div class="hero-section">
+          <h2>Học tập thông minh với AI</h2>
+          <p>
+            Nền tảng học tập được cá nhân hóa, hỗ trợ 24/7 và giúp bạn thành
+            thạo mọi chủ đề.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-comments"></i>
+            </div>
+            <h3>AI Gia sư</h3>
+            <p>Trợ lý AI thông minh sẵn sàng giải đáp mọi thắc mắc.</p>
+            <button onclick="toggleChat()" class="feature-btn">
+              Bắt đầu chat
+            </button>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-brain"></i>
+            </div>
+            <h3>Quiz thông minh</h3>
+            <p>Tạo bài kiểm tra cá nhân hóa theo trình độ và sở thích.</p>
+            <button onclick="showSection('quiz')" class="feature-btn">
+              Tạo quiz ngay
+            </button>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-book-open"></i>
+            </div>
+            <h3>Tóm tắt bài học</h3>
+            <p>AI tóm tắt nội dung học tập thành các ý chính dễ hiểu.</p>
+            <button onclick="showSection('summary')" class="feature-btn">
+              Tạo tóm tắt
+            </button>
+          </div>
+        </div>
+
+        <div class="how-it-works">
+          <div class="how-it-works-content">
+            <h3>Cách thức hoạt động</h3>
+            <div class="steps">
+              <div class="step">
+                <div class="step-number blue-purple">1</div>
+                <div class="step-content">
+                  <h4>Chọn chủ đề</h4>
+                  <p>Lựa chọn từ hàng trăm chủ đề học tập và chuyên môn.</p>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-number green-blue">2</div>
+                <div class="step-content">
+                  <h4>Tương tác với AI</h4>
+                  <p>Đặt câu hỏi, yêu cầu giải thích hoặc nhận hỗ trợ.</p>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-number purple-pink">3</div>
+                <div class="step-content">
+                  <h4>Theo dõi kết quả</h4>
+                  <p>Nhận phản hồi cá nhân hóa và theo dõi tiến bộ.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="how-it-works-visual">
+            <div class="visual-content">
+              <i class="fas fa-graduation-cap"></i>
+              <p>Học tập hiệu quả</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="learning-resources">
+          <div class="section-header">
+            <h3>Nâng cao hiệu quả học tập</h3>
+            <div class="section-divider"></div>
+          </div>
+
+          <div class="resources-grid">
+            <div class="resource-card">
+              <div class="resource-icon">
+                <i class="fas fa-code"></i>
+              </div>
+              <h4>Web mẫu học lập trình</h4>
+              <p>
+                Khám phá các ngôn ngữ lập trình phổ biến từ cơ bản đến nâng cao.
+              </p>
+              <button
+                onclick="showSection('courses')"
+                class="resource-btn blue"
+              >
+                Xem các môn học
+              </button>
+            </div>
+
+            <div class="resource-card">
+              <div class="resource-icon">
+                <i class="fas fa-book"></i>
+              </div>
+              <h4>Tài liệu tham khảo</h4>
+              <p>
+                Thư viện tài liệu được chọn lọc từ các nguồn uy tín, đa dạng chủ
+                đề.
+              </p>
+              <button
+                onclick="showSection('resources')"
+                class="resource-btn green"
+              >
+                Khám phá
+              </button>
+            </div>
+
+            <div class="resource-card">
+              <div class="resource-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <h4>Tiến độ học tập</h4>
+              <p>Biểu đồ thống kê hoạt động học tập của bạn.</p>
+              <button onclick="showSection('progress')" class="resource-btn">
+                Xem biểu đồ
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Chat Section -->
+      <section id="chat" class="section">
+        <div class="chat-layout">
+          <div class="chat-sidebar">
+            <div class="chat-sidebar-header">
+              <h3><i class="fas fa-history"></i> Lịch sử trò chuyện</h3>
+            </div>
+            <button
+              id="new-chat-btn"
+              onclick="startNewChat()"
+              class="new-chat-button"
+            >
+              <i class="fas fa-plus-circle"></i> Tạo đoạn chat mới
+            </button>
+            <div class="chat-history">
+              <p>Nội dung lịch sử trò chuyện sẽ được thêm vào đây</p>
+            </div>
+          </div>
+
+          <div class="chat-main">
+            <div class="chat-header">
+              <h2><i class="fas fa-robot"></i> AI Chat</h2>
+            </div>
+            <div id="chat-container" class="chat-container">
+              <div class="chat-messages">
+                <div class="message-group">
+                  <div class="chat-bubble ai-msg">
+                    <p>
+                      Xin chào! Tôi là trợ lý AI của bạn. Hôm nay bạn muốn học
+                      gì? Bạn có thể hỏi về bất kỳ môn học nào hoặc đính kèm file để tôi giúp bạn phân tích!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Chat file attachment display -->
+            <div id="chat-file-info" class="chat-file-info hidden">
+              <div class="chat-file-content">
+                <i class="fas fa-file-alt"></i>
+                <div class="chat-file-details">
+                  <span id="chat-file-name">document.pdf</span>
+                  <small id="chat-file-size">2.1 MB</small>
+                </div>
+                <button onclick="clearChatFile()" class="chat-file-remove">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="chat-input-area">
+              <div class="chat-input-group">
+                <!-- File upload button -->
+                <input
+                  type="file"
+                  id="chat-file-input"
+                  accept=".pdf,.doc,.docx,.txt"
+                  class="hidden"
+                  onchange="handleChatFileUpload(event)"
+                />
+                <button 
+                  onclick="document.getElementById('chat-file-input').click()" 
+                  class="chat-file-btn"
+                  title="Đính kèm file"
+                >
+                  <i class="fas fa-paperclip"></i>
+                </button>
+                
+                <input
+                  type="text"
+                  id="user-input"
+                  placeholder="Hỏi tôi bất cứ điều gì hoặc đính kèm file..."
+                  class="chat-input"
+                />
+                <button onclick="sendMessage()" class="send-btn">
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quiz Section -->
+      <section id="quiz" class="section">
+        <div class="quiz-container">
+          <div class="quiz-card">
+            <div class="quiz-header">
+              <h2><i class="fas fa-brain"></i> Quản lý Quiz</h2>
+            </div>
+            <div class="quiz-content">
+              <div class="quiz-input-section">
+                <div class="content-method-tabs">
+                  <button
+                    onclick="showContentMethod('file')"
+                    id="file-tab"
+                    class="method-tab active"
+                  >
+                    📁 Tải file
+                  </button>
+                  <button
+                    onclick="showContentMethod('text')"
+                    id="text-tab"
+                    class="method-tab"
+                  >
+                    📝 Nhập nội dung
+                  </button>
+                  <button
+                    onclick="showContentMethod('my-quizzes')"
+                    id="my-quizzes-tab"
+                    class="method-tab"
+                  >
+                    📚 Quiz của tôi
+                  </button>
+                </div>
+
+                <div id="file-method" class="content-method">
+                  <div class="file-upload-area">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Tải file lên</h3>
+                    <p>Hỗ trợ PDF, DOC, DOCX, TXT (tối đa 10MB)</p>
+                    <input
+                      type="file"
+                      id="file-input"
+                      accept=".pdf,.doc,.docx,.txt"
+                      class="hidden"
+                      onchange="handleFileUpload(event)"
+                    />
+                    <button
+                      onclick="document.getElementById('file-input').click()"
+                      class="upload-btn"
+                    >
+                      Chọn file
+                    </button>
+                    <div id="file-info" class="file-info hidden">
+                      <div class="file-info-content">
+                        <i class="fas fa-file-alt"></i>
+                        <span id="file-name"></span>
+                        <button onclick="clearFile()" class="file-remove">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="text-method" class="content-method hidden">
+                  <div class="text-input-area">
+                    <label class="text-input-label"
+                      >Nhập nội dung học liệu</label
+                    >
+                    <textarea
+                      id="content-input"
+                      placeholder="Dán nội dung bài học, ghi chú, hoặc tài liệu mà bạn muốn tạo quiz từ đó..."
+                      class="content-textarea"
+                      maxlength="5000"
+                    ></textarea>
+                    <div class="char-counter">
+                      <small>Tối đa 5000 ký tự</small>
+                      <small id="char-count">0/5000</small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- My Quizzes content moved here -->
+                <div id="my-quizzes-method" class="content-method hidden">
+                  <div class="my-quizzes-list">
+                    <p class="loading-message">
+                      <i class="fas fa-spinner fa-spin"></i> Đang tải Quiz của
+                      bạn...
+                    </p>
+                    <!-- Quiz items will be loaded here -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quiz settings and generate button are only for 'file' and 'text' methods -->
+              <div id="quiz-creation-controls">
+                <!-- Cải thiện UI cho quiz settings -->
+<div class="quiz-settings">
+  <div class="setting-group">
+    <label class="setting-label">Độ khó</label>
+    <select id="quiz-difficulty" class="setting-select">
+      <option value="easy">Dễ (kiến thức cơ bản)</option>
+      <option value="medium" selected>Trung bình (hiểu sâu)</option>
+      <option value="hard">Khó (phân tích, suy luận)</option>
+    </select>
+  </div>
+  <div class="setting-group">
+    <label class="setting-label">Số câu hỏi</label>
+    <input
+      type="number"
+      id="question-count"
+      min="1"
+      max="20"
+      value="5"
+      class="setting-input"
+    />
+    <small class="setting-hint">Từ 1 đến 20 câu</small>
+  </div>
+</div>
+
+<!-- Thêm progress indicator -->
+<div id="quiz-progress" class="quiz-progress hidden">
+  <div class="progress-bar">
+    <div class="progress-fill"></div>
+  </div>
+  <span class="progress-text">Đang tạo câu hỏi...</span>
+</div>
+
+                <button
+                  onclick="generateQuiz()"
+                  id="generate-btn"
+                  class="generate-btn disabled"
+                  disabled
+                >
+                  🤖 Vui lòng thêm nội dung trước
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="quiz-display" class="quiz-display hidden">
+            <div class="quiz-display-card">
+              <div class="quiz-display-header">
+                <h2>Quiz của bạn</h2>
+              </div>
+              <div id="quiz-content" class="quiz-questions"></div>
+              <div class="quiz-submit-area">
+                <button onclick="submitQuiz()" class="quiz-submit-btn">
+                  Nộp bài
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="quiz-results" class="quiz-results hidden">
+            <div class="quiz-results-card">
+              <div class="quiz-results-header">
+                <h2>Kết quả Quiz</h2>
+              </div>
+              <div class="quiz-results-content">
+                <div class="score-display">
+                  <span class="score" id="score">0</span>/<span id="total"
+                    >0</span
+                  >
+                </div>
+                <p class="feedback" id="feedback">Tuyệt vời!</p>
+                <button onclick="generateQuiz()" class="new-quiz-btn">
+                  Tạo Quiz mới
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Summary Section -->
+      <section id="summary" class="section">
+        <div class="summary-container">
+          <div class="summary-card">
+            <div class="summary-header">
+              <h2><i class="fas fa-book-open"></i> Tóm tắt bài học</h2>
+            </div>
+            <div class="summary-content">
+              <div class="summary-input-section">
+                <label class="summary-label">Nhập nội dung cần tóm tắt</label>
+                <textarea
+                  id="summary-input"
+                  placeholder="Dán nội dung bài học, tài liệu hoặc ghi chú mà bạn muốn tóm tắt..."
+                  class="summary-textarea"
+                  spellcheck="false"
+                ></textarea>
+                <div class="summary-controls">
+                  <div class="summary-options">
+                    <label class="checkbox-label">
+                      <input type="checkbox" id="summary-short-checkbox" />
+                      <span>Tóm tắt ngắn gọn</span>
+                    </label>
+                  </div>
+                  <button onclick="generateSummary()" class="summary-btn">
+                    <i class="fas fa-magic"></i>Tạo tóm tắt
+                  </button>
+                </div>
+              </div>
+
+              <div id="summary-result" class="summary-result hidden">
+                <h3 class="summary-result-title">Tóm tắt bài học</h3>
+                <div id="summary-content" class="summary-result-content"></div>
+                <div class="summary-actions">
+                  <button
+                    onclick="copySummary()"
+                    class="summary-action-btn copy"
+                  >
+                    <i class="fas fa-copy"></i>Sao chép
+                  </button>
+                  <button
+                    onclick="downloadSummary()"
+                    class="summary-action-btn download"
+                  >
+                    <i class="fas fa-download"></i>Tải xuống
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Courses Section -->
+      <section id="courses" class="section">
+        <div class="courses-container">
+          <div class="courses-header">
+            <h2>Web mẫu học lập trình</h2>
+            <p>
+              Khám phá và học tập 6 ngôn ngữ lập trình phổ biến từ cơ bản đến
+              nâng cao
+            </p>
+          </div>
+
+          <div class="courses-grid" id="programming-courses-grid">
+          </div>  
+        </div>
+      </section>
+
+      <!--  Resources Section  -->
+      <section id="resources" class="section">
+        <div class="resources-container">
+          <div class="resources-header">
+            <h2>Tài liệu tham khảo</h2>
+            <p>
+              Các tài liệu học tập chất lượng được tổng hợp từ nhiều nguồn uy
+              tín
+            </p>
+            </div>
+          </div>
+
+          <div class="resources-grid" id="resources-grid">
+            <!-- Resources will be loaded dynamically here -->
+            <div class="loading-placeholder">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Đang tải tài liệu...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+<!--  Timeline Section -->
+<section id="progress" class="section">
+  <div class="timeline-container">
+    <div class="timeline-card">
+      <div class="timeline-header">
+        <h2>
+          <i class="fas fa-history"></i> Tiến độ học tập
+        </h2>
+        <div class="timeline-controls">
+          <select id="timeline-filter" class="timeline-filter">
+            <option value="all">Tất cả hoạt động</option>
+            <option value="today">Hôm nay</option>
+            <option value="week">Tuần này</option>
+            <option value="month">Tháng này</option>
+          </select>
+          <button onclick="clearTimelineHistory()" class="clear-timeline-btn">
+            <i class="fas fa-trash"></i> Xóa lịch sử
+          </button>
+        </div>
+      </div>
+      <div class="timeline-content">
+        <div class="timeline-stats">
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <i class="fas fa-mouse-pointer"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-visits">0</h3>
+              <p>Tổng lượt truy cập</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-time">0 phút</h3>
+              <p>Tổng thời gian</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">
+              <i class="fas fa-globe"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="unique-pages">0</h3>
+              <p>Trang duy nhất</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">
+              <i class="fas fa-calendar-day"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="active-days">0</h3>
+              <p>Ngày hoạt động</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-visualization">
+          <div class="timeline-line"></div>
+          <div id="timeline-events" class="timeline-events">
+            <div class="timeline-placeholder">
+              <i class="fas fa-history"></i>
+              <p>Lịch sử truy cập sẽ được hiển thị ở đây</p>
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-grid">
+          <div class="footer-section">
+            <div class="footer-logo">
+              <i class="fas fa-robot"></i>
+              <h3>Learn With AI</h3>
+            </div>
+            <p>Nền tảng học tập thông minh với tích hợp AI </p>
+          </div>
+
+          <div class="footer-section">
+            <h4>Tính năng</h4>
+            <ul>
+              <li><a href="#" onclick="showSection('chat')">AI Chat</a></li>
+              <li><a href="#" onclick="showSection('quiz')">Tạo Quiz</a></li>
+              <li><a href="#" onclick="showSection('summary')">Tóm tắt bài</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Tài Nguyên</h4>
+            <ul>
+              <li><a href="#" onclick="showSection('courses')">Tiến độ học tập</a></li>
+              <li><a href="#"onclick="showSection('resources')">Tài liệu tham khảo</a></li>
+              <li><a href="#"onclick="showSection('progress')">Sơ đồ giờ truy cập</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h4>Liên hệ</h4>
+            <ul class="contact-info">
+              <li>
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Cần Thơ, Việt Nam</span>
+              </li>
+              <li>
+                <i class="fas fa-envelope"></i>
+                <span>contact@learnwithai.ai</span>
+              </li>
+              <li>
+                <i class="fas fa-phone-alt"></i>
+                <span>+84 123 456 789</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
